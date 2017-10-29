@@ -7,7 +7,9 @@
     var btnItemInput;
     var inputItems=[];
     var render;
-    var events
+    var events;
+    var storage;
+   
 
     vm.RenderFunctions=function(){
 
@@ -52,19 +54,53 @@
         var removeInputfeild=function(){
            // var item_input_group=vm.getElementById('item-input-group');
             var input=document.getElementsByClassName('inputFieldItem');
-            console.log(input.length);
-            if(!(input.length<2)){
-                input[input.length-1].parentNode.removeChild(input[input.length-1]);
-                
-            }else{
+            console.log("Number of Input:",input.length);
+            if(input.length>1){
+                input[input.length-1].parentNode.removeChild(input[input.length-1]);    
+            }
+            if(input.length<2){
                 disableButton(btnRemoveInput);
             }
         }
-
         return{
             'addInputfeild':addInputfeild,
             'removeInputfeild':removeInputfeild
         }
+    }
+
+    var StorageFuncitons=function(){
+
+        var readFromStorage=function(key){
+            var data=localStorage.getItem(key);
+            if(data!=null)
+                return data;
+            else 
+                return null;
+        }
+
+        var writeToStorage=function(key,data){
+            localStorage.setItem(key,data);
+        }
+
+        var initializeInputFeildCounter=function(){
+            writeToStorage('inputFeildCounter','1');
+        }   
+
+        var getInputFeildCountValue=function(){
+            return readFromStorage('inputFeildCounter');
+        }
+
+        var incrementInputFeildCounter=function(){
+            var counter=getInputFeildCountValue();
+            wite('inputFeildCounter',++counter);
+        }
+
+        return{
+            'initializeInputFeildCounter':initializeInputFeildCounter,
+            'getInputFeildCountValue':getInputFeildCountValue,
+            'incrementInputFeildCounter':incrementInputFeildCounter
+        }
+
     }
 
     var Events=function(){
@@ -104,6 +140,14 @@
     function init(){
         render=new vm.RenderFunctions();
         events=new Events();
+        storage=new StorageFuncitons();
+
+        //Initializing StorageData
+        if(storage.getInputFeildCountValue()==null){
+            storage.initializeInputFeildCounter();
+            console.log("storage Initialized");
+        }
+
         vm.domBinder();
         vm.attachEventListener();
     }
