@@ -6,6 +6,7 @@
     var btnRemoveInput;
     var btnItemInput;
     var inputItems=[];
+    var isEditMode=false;
     var render;
     var events;
     var storage;
@@ -43,28 +44,50 @@
             buttonElem.disabled=false;
         }
 
-        //Add Input Feild
-        var addInputfeild=function(){
-            enableButton(btnRemoveInput);
+        var addInputfeild=function(inputcounter){
             var item_input_group=vm.getElementById('item-input-group');
             var inputField=createInput('form-control inputFieldItem',item_input_group,'inputItems','');
         }
 
-        //Remove INput Feild
-        var removeInputfeild=function(){
-           // var item_input_group=vm.getElementById('item-input-group');
-            var input=document.getElementsByClassName('inputFieldItem');
-            console.log("Number of Input:",input.length);
-            if(input.length>1){
-                input[input.length-1].parentNode.removeChild(input[input.length-1]);    
+        var removeAllInputfeild=function(){
+            var item_input_group=vm.getElementById('item-input-group');
+            item_input_group.innerHTML="";
+         } 
+         
+        var renderInputButtons=function(){
+            var item_input_group=vm.getElementById('item-input-group');
+            var elem=createButton('btn btn-primary btn-block',item_input_group,'btnItemInput','Add Item');
+        }
+
+        var renderInputFeilds=function(){
+            removeAllInputfeild();
+            var inputFeildCounter=storage.getInputFeildCountValue();
+            for(var i=0;i<inputFeildCounter;i++){
+                addInputfeild(i);
             }
-            if(input.length<2){
+            renderInputButtons();
+        }
+
+
+
+        var buttonDisableEnable=function(){
+            if(storage.getInputFeildCountValue()<2){
+                disableButton(btnRemoveInput);
+                console.log("Butotn Should be disabled");
+            }else{
+                enableButton(btnRemoveInput);
+                console.log("Butotn Should be Enable");
+            }
+
+            if(isEditMode){
+                disableButton(btnAddInput);
                 disableButton(btnRemoveInput);
             }
         }
+        
         return{
-            'addInputfeild':addInputfeild,
-            'removeInputfeild':removeInputfeild
+            'renderInputFeilds':renderInputFeilds,
+            'buttonDisableEnable':buttonDisableEnable
         }
     }
 
@@ -92,13 +115,19 @@
 
         var incrementInputFeildCounter=function(){
             var counter=getInputFeildCountValue();
-            wite('inputFeildCounter',++counter);
+            writeToStorage('inputFeildCounter',++counter);
+        }
+
+        var decrementInputFeildCounter=function(){
+            var counter=getInputFeildCountValue();
+            writeToStorage('inputFeildCounter',--counter);
         }
 
         return{
             'initializeInputFeildCounter':initializeInputFeildCounter,
             'getInputFeildCountValue':getInputFeildCountValue,
-            'incrementInputFeildCounter':incrementInputFeildCounter
+            'incrementInputFeildCounter':incrementInputFeildCounter,
+            'decrementInputFeildCounter':decrementInputFeildCounter
         }
 
     }
@@ -106,12 +135,16 @@
     var Events=function(){
        
         var btnAddInputEvent=function(){
-            render.addInputfeild();
+            storage.incrementInputFeildCounter();
+            render.renderInputFeilds();
+            render.buttonDisableEnable();
             console.log("Add Input Evenet fired");
         }
 
         var btnRemoveInputEvent=function(){
-            render.removeInputfeild();
+            storage.decrementInputFeildCounter();
+            render.renderInputFeilds();
+            render.buttonDisableEnable();
             console.log("Remove Input Evenet fired");
         }
 
@@ -147,8 +180,11 @@
             storage.initializeInputFeildCounter();
             console.log("storage Initialized");
         }
-
+      
+        //Render Dynamic Displayts
+        render.renderInputFeilds();
         vm.domBinder();
+     
         vm.attachEventListener();
     }
 
