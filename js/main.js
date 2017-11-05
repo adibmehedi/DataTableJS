@@ -19,7 +19,9 @@
             elem.className = className;
             elem.value = value;
             elem.id = id;
-            parentTag.appendChild(elem);
+            if (parentTag) {
+                parentTag.appendChild(elem);
+            }
             return elem;
         }
 
@@ -34,6 +36,26 @@
             elem.type = "text";
             elem.placeholder = placeholder;
             return elem;
+        }
+
+        var createTableCol = function (data) {
+            var elem = createElement('td');
+            elem.innerText = data;
+            return elem;
+        }
+
+        var createTableRow = function (rowItems) {
+            var elem = createElement('tr');
+            rowItems.forEach(function (item) {
+                var td = createTableCol(item.data);
+                elem.appendChild(td);
+            });
+            return elem;
+        }
+
+        var removeAllTableRow = function () {
+            var tbody = vm.getElementById('table-body');
+            tbody.innerHTML = "";
         }
 
         var disableButton = function (buttonElem) {
@@ -68,14 +90,12 @@
             renderInputButtons();
         }
 
-        var emptInputFeilds=function(){
+        var emptInputFeilds = function () {
             var size = inputFeilds.length;
             for (let i = 0; i < size; i++) {
-              inputFeilds[i].value="";
+                inputFeilds[i].value = "";
             }
         }
-
-
 
         var buttonDisableEnable = function () {
             if (storage.getInputFeildCountValue() < 2) {
@@ -92,9 +112,25 @@
             }
         }
 
+        var renderTable = function () {
+            removeAllTableRow();
+            if (storage.getTableItems() != null) {
+                var items = JSON.parse(storage.getTableItems());
+                var numberOfcolumn = storage.getInputFeildCountValue();
+                var numberOfRow = items.length / numberOfcolumn;
+                var tbody = vm.getElementById('table-body');
+                for (var i = 0; i < numberOfRow; i++) {
+                    var rowItems = items.splice(0, numberOfcolumn);
+                    var tr = createTableRow(rowItems);
+                    tbody.appendChild(tr);
+                }
+            }
+        }
+
         return {
             'renderInputFeilds': renderInputFeilds,
-            'emptInputFeilds':emptInputFeilds,
+            'renderTable': renderTable,
+            'emptInputFeilds': emptInputFeilds,
             'buttonDisableEnable': buttonDisableEnable
         }
     }
@@ -107,6 +143,10 @@
                 return data;
             else
                 return null;
+        }
+
+        var getTableItems = function () {
+            return readFromStorage('table-items');
         }
 
         var writeToStorage = function (key, data) {
@@ -139,36 +179,36 @@
             }
         }
 
-        var getLastRowId=function(){
+        var getLastRowId = function () {
             var items = JSON.parse(readFromStorage('table-items'));
-            var id=1;
-            items.forEach(function(element) {
-                if(id>element.row_id){
-                    id=row_id;
-                } 
-                
+            var id = 1;
+            items.forEach(function (element) {
+                if (id > element.row_id) {
+                    id = row_id;
+                }
+
             }, this);
             return id;
         }
 
         var addNewRowToStorage = function (values) {
-             var itemArray=[];
-             var row_id=1;
-             var previousValues=readFromStorage('table-items'); 
-             if(previousValues!=null){
-                 console.log("Previous Value is not null");
-                row_id=getLastRowId()+1;
-                itemArray =  JSON.parse(previousValues);
-                console.log("Previous:",itemArray);
-             }
+            var itemArray = [];
+            var row_id = 1;
+            var previousValues = readFromStorage('table-items');
+            if (previousValues != null) {
+                console.log("Previous Value is not null");
+                row_id = getLastRowId() + 1;
+                itemArray = JSON.parse(previousValues);
+                console.log("Previous:", itemArray);
+            }
 
-             var col_id=1;
-             values.forEach(function(value) {
-                itemArray.push(newItem(row_id,col_id,value));
+            var col_id = 1;
+            values.forEach(function (value) {
+                itemArray.push(newItem(row_id, col_id, value));
                 col_id++;
-             }, this);
+            }, this);
 
-             writeToStorage('table-items',JSON.stringify(itemArray));
+            writeToStorage('table-items', JSON.stringify(itemArray));
         }
 
         return {
@@ -176,7 +216,8 @@
             'getInputFeildCountValue': getInputFeildCountValue,
             'incrementInputFeildCounter': incrementInputFeildCounter,
             'decrementInputFeildCounter': decrementInputFeildCounter,
-            'addNewRowToStorage': addNewRowToStorage
+            'addNewRowToStorage': addNewRowToStorage,
+            'getTableItems': getTableItems
         }
 
     }
@@ -205,7 +246,8 @@
             }
             storage.addNewRowToStorage(inputValues);
             render.emptInputFeilds();
-            console.log("Input Items:",inputValues);
+            render.renderTable();
+            console.log("Input Items:", inputValues);
             console.log("Item Input event fired");
         }
         return {
@@ -244,8 +286,8 @@
         //Render Dynamic Displayts
         render.renderInputFeilds();
         vm.domBinder();
-
         vm.attachEventListener();
+        render.renderTable(storage);
     }
 
     init();
