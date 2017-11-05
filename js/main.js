@@ -123,17 +123,44 @@
             writeToStorage('inputFeildCounter', --counter);
         }
 
-        var addNewRowToStorage=function(values){
-            var previousValues=readFromStorage('table-items');
-            if(previousValues){
-                //find out last Id of the row
-                //create new obejct with that id and values
-                //write to storage    
-            }else{
-                //set id to 1
-                //create new objet with that id and values
-                //write to storage
+        var newItem = function (row_id, col_id, data) {
+            return {
+                'row-id': row_id,
+                'column-id': col_id,
+                'data': data
             }
+        }
+
+        var getLastRowId=function(){
+            var items = JSON.parse(readFromStorage('table-items'));
+            var id=1;
+            items.forEach(function(element) {
+                if(id>element.row_id){
+                    id=row_id;
+                } 
+                
+            }, this);
+            return id;
+        }
+
+        var addNewRowToStorage = function (values) {
+             var itemArray=[];
+             var row_id=1;
+             var previousValues=readFromStorage('table-items'); 
+             if(previousValues!=null){
+                 console.log("Previous Value is not null");
+                row_id=getLastRowId()+1;
+                previousValues =  JSON.parse(previousValues);
+                itemArray.push(previousValues);
+             }
+
+             var col_id=1;
+             values.forEach(function(value) {
+                itemArray.push(newItem(row_id,col_id,value));
+                col_id++;
+             }, this);
+
+             writeToStorage('table-items',JSON.stringify(itemArray));
         }
 
         return {
@@ -141,7 +168,7 @@
             'getInputFeildCountValue': getInputFeildCountValue,
             'incrementInputFeildCounter': incrementInputFeildCounter,
             'decrementInputFeildCounter': decrementInputFeildCounter,
-            'addNewRowToStorage':addNewRowToStorage
+            'addNewRowToStorage': addNewRowToStorage
         }
 
     }
@@ -164,12 +191,13 @@
 
         var btnItemInputEvent = function () {
             var inputValues = [];
-            var size=inputFeilds.length;
-            for(let i=0;i<size;i++){
-               inputValues.push(inputFeilds[i].value);
+            var size = inputFeilds.length;
+            for (let i = 0; i < size; i++) {
+                inputValues.push(inputFeilds[i].value);
             }
             storage.addNewRowToStorage(inputValues);
-            console.log(inputValues);
+            render.renderInputFeilds();
+            console.log("Input Items:",inputValues);
             console.log("Item Input event fired");
         }
         return {
