@@ -68,6 +68,13 @@
             renderInputButtons();
         }
 
+        var emptInputFeilds=function(){
+            var size = inputFeilds.length;
+            for (let i = 0; i < size; i++) {
+              inputFeilds[i].value="";
+            }
+        }
+
 
 
         var buttonDisableEnable = function () {
@@ -87,6 +94,7 @@
 
         return {
             'renderInputFeilds': renderInputFeilds,
+            'emptInputFeilds':emptInputFeilds,
             'buttonDisableEnable': buttonDisableEnable
         }
     }
@@ -150,8 +158,8 @@
              if(previousValues!=null){
                  console.log("Previous Value is not null");
                 row_id=getLastRowId()+1;
-                previousValues =  JSON.parse(previousValues);
-                itemArray.push(previousValues);
+                itemArray =  JSON.parse(previousValues);
+                console.log("Previous:",itemArray);
              }
 
              var col_id=1;
@@ -196,7 +204,7 @@
                 inputValues.push(inputFeilds[i].value);
             }
             storage.addNewRowToStorage(inputValues);
-            render.renderInputFeilds();
+            render.emptInputFeilds();
             console.log("Input Items:",inputValues);
             console.log("Item Input event fired");
         }
